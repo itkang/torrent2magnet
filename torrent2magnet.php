@@ -29,10 +29,6 @@ function success($info_hash)
 	if ($json)
 	{
 		echo $json;
-		
-		    $encrypted_string= bin2hex(mcrypt_encrypt(MCRYPT_RIJNDAEL_128,'test', 'test', MCRYPT_MODE_CBC,'test'));  
-		    echo  $encrypted_string;
-
 	}
 }
 function failed()
