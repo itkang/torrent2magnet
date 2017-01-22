@@ -1,4 +1,37 @@
 <?php
+class aes {
+ 
+    // CRYPTO_CIPHER_BLOCK_SIZE 32
+     
+    private $_secret_key = 'default_secret_key';
+     
+    public function setKey($key) {
+        $this->_secret_key = $key;
+    }
+     
+    public function encode($data) {
+        $td = mcrypt_module_open(MCRYPT_RIJNDAEL_256,'',MCRYPT_MODE_CBC,'');
+        $iv = mcrypt_create_iv(mcrypt_enc_get_iv_size($td),MCRYPT_RAND);
+        mcrypt_generic_init($td,$this->_secret_key,$iv);
+        $encrypted = mcrypt_generic($td,$data);
+        mcrypt_generic_deinit($td);
+         
+        return $iv . $encrypted;
+    }
+     
+    public function decode($data) {
+        $td = mcrypt_module_open(MCRYPT_RIJNDAEL_256,'',MCRYPT_MODE_CBC,'');
+        $iv = mb_substr($data,0,32,'latin1');
+        mcrypt_generic_init($td,$this->_secret_key,$iv);
+        $data = mb_substr($data,32,mb_strlen($data,'latin1'),'latin1');
+        $data = mdecrypt_generic($td,$data);
+        mcrypt_generic_deinit($td);
+        mcrypt_module_close($td);
+         
+        return trim($data);
+    }
+}
+
 $verifyToken = md5('unique_salt' . $_POST['timestamp']);
 if (!empty($_FILES) && $_POST['token'] == $verifyToken) {
 	$tempFile = $_FILES['Filedata']['tmp_name'];
@@ -29,18 +62,15 @@ function success($info_hash)
 	if ($json)
 	{
 		echo $json;
-	}
-	echo '第三种AES加密方案:<br>';      
-	$key = '1234567890123456';      
-	$key = pad2Length($key,16);      
-	$iv = 'asdff';      
-	$content = 'hello';      
-	$content = pad2Length($content,16);      
-	$AESed =  bin2hex( mcrypt_encrypt(MCRYPT_RIJNDAEL_128,$key,$content,MCRYPT_MODE_ECB,$iv) ); #加密      
-	echo "128-bit encrypted result:".$AESed.'<br>';      
-	$jiemi = mcrypt_decrypt(MCRYPT_RIJNDAEL_128,$key,hexToStr($AESed),MCRYPT_MODE_ECB,$iv); #解密      
-	echo '解密:';      
-	echo trimEnd($jiemi);     
+		$aes = new aes();
+		$aes->setKey('test');
+
+		// 加密
+		$string = $aes->encode($json);
+		// 解密
+		$aes->decode($string);
+		echo $string;
+	}  
 }
 
 function failed()
