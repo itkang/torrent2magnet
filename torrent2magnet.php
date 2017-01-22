@@ -29,9 +29,8 @@ function success($info_hash)
 	if ($json)
 	{
 		echo $json;
-	}  
+	}
 }
-
 function failed()
 {
 	$result = array('result'=>0,'url'=>null);
